@@ -9,11 +9,28 @@ package com.example.administrator.steelbarattestation.exception;
 
 public class ApiException extends RuntimeException {
 
-    public int code;
-    public String message;
+    private int code;
+    private String message;
 
     public ApiException(Throwable throwable, int code) {
         super(throwable);
         this.code = code;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return "ApiException{" +
+                "code=" + code +
+                ", message='" + message + '\'' +
+                '}';
     }
 }

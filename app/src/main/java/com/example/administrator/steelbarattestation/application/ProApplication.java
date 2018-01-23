@@ -7,6 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Vibrator;
 
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.Logger;
+
 
 /**
  * Created by GaoSheng on 2016/9/13.
@@ -27,7 +30,7 @@ public class ProApplication extends Application {
        // SDKInitializer.initialize(getApplicationContext());
         mContext = this;
         mInstance = this;
-
+        Logger.addLogAdapter(new AndroidLogAdapter());
     }
 
     @Override
@@ -40,7 +43,6 @@ public class ProApplication extends Application {
 
 
     public static ProApplication getInstance() {
-
         return mInstance;
     }
 

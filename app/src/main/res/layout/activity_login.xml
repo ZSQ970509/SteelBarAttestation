@@ -7,5 +7,10 @@
     android:orientation="vertical"
     tools:context="com.example.administrator.steelbarattestation.activity.LoginActivity">\
 
-
+    <include layout="@layout/actionbar_layout"/>
+    <Button
+        android:id="@+id/login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="登录"/>
 </LinearLayout>

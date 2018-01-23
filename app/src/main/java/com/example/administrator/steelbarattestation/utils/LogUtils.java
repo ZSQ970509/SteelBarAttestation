@@ -3,6 +3,7 @@ package com.example.administrator.steelbarattestation.utils;
 import android.util.Log;
 
 import com.example.administrator.steelbarattestation.BuildConfig;
+import com.orhanobut.logger.Logger;
 
 
 /**
@@ -18,7 +19,7 @@ public class LogUtils {
      */
     public static void d(String tag, String msg) {
         if (isDebug) {
-            Log.d("aaaa_" + tag, msg);
+            Logger.d("aaaa_" + tag, msg);
         }
     }
 

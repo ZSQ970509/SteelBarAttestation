@@ -1,5 +1,7 @@
 package com.example.administrator.steelbarattestation.mvp;
 
+import com.trello.rxlifecycle2.LifecycleTransformer;
+
 /**
  * Created by GaoSheng on 2016/11/26.
  * 17:20
@@ -10,6 +12,15 @@ package com.example.administrator.steelbarattestation.mvp;
  */
 
 public interface IView {
+    /**
+     * 显示加载
+     */
+    void showLoading();
 
+    /**
+     * 隐藏加载
+     */
+    void hideLoading();
 
+    LifecycleTransformer bindLifecycle();
 }

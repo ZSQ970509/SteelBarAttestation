@@ -1,9 +1,8 @@
 package com.example.administrator.steelbarattestation.utils;
 
 import android.app.Activity;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import android.app.ActivityManager;
+import android.content.Context;
 
 import java.util.Stack;
 
@@ -12,121 +11,107 @@ import java.util.Stack;
  * Activity管理工具类(包含对Fragment的添加切换)
  */
 
-public class ActivityUtils {
-
-    private static Stack<Activity> mActivityStack;
+public enum  ActivityUtils {
+    INSTANCE();
+    ActivityUtils() {
+        mActivityStack = new Stack<>();
+    }
+    private Stack<Activity> mActivityStack;
 
     /**
      * 添加一个Activity到堆栈中
-     * @param activity
      */
-    public static void addActivity(Activity activity) {
-        if (null == mActivityStack) {
+    public void addActivity(Activity activity) {
+        if (mActivityStack == null) {
             mActivityStack = new Stack<>();
         }
-        mActivityStack.add(activity);
+        mActivityStack.push(activity);
+    }
+    /**
+     * 获取到当前显示Activity（堆栈中最后一个传入的activity）
+     */
+    public Activity getLastActivity() {
+        if (mActivityStack != null)
+            return mActivityStack.lastElement();
+        else
+            return null;
     }
 
     /**
      * 从堆栈中移除指定的Activity
-     * @param activity
      */
-    public static void removeActivity(Activity activity) {
+    public void finishActivity(Activity activity) {
         if (activity != null) {
             mActivityStack.remove(activity);
+            activity.finish();
         }
     }
 
     /**
-     * 获取顶部的Activity
-     * @return
+     * 结束指定类名的Activity
      */
-    public static Activity getTopActivity() {
-        if (mActivityStack.isEmpty()) {
-            return null;
-        } else {
-            return mActivityStack.get(mActivityStack.size() - 1);
+    public void finishActivity(Class<?> cls) {
+        for (Activity activity : mActivityStack) {
+            if (activity.getClass().equals(cls)) {
+                finishActivity(activity);
+                break;
+            }
         }
     }
 
     /**
-     * 结束所有的Activity，退出应用
+     * 结束除当前传入以外所有Activity
      */
-    public static void removeAllActivity() {
-        if (mActivityStack != null && mActivityStack.size() > 0) {
+    public void finishOthersActivity(Class<?> cls) {
+        if (mActivityStack != null)
+            for (Activity activity : mActivityStack) {
+                if (!activity.getClass().equals(cls)) {
+                    activity.finish();
+                }
+            }
+    }
+
+    /**
+     * 结束除当前传入以外所有Activity
+     */
+    public void finishOthersActivity(Activity activity) {
+        if (mActivityStack != null)
+            for (Activity itemActivity : mActivityStack) {
+                if (activity != itemActivity) {
+                    itemActivity.finish();
+                }
+            }
+    }
+
+    /**
+     * 结束所有Activity
+     */
+    public void finishAllActivity() {
+        if (mActivityStack != null) {
             for (Activity activity : mActivityStack) {
                 activity.finish();
             }
+            mActivityStack.clear();
         }
     }
 
     /**
-     * 将一个Fragment添加到Activity中
-     * @param fragmentManager fragment管理器
-     * @param fragment  需要添加的fragment
-     * @param frameId  布局FrameLayout的Id
+     * 退出应用程序
+     * @param context
      */
-    public static void addFragmentToActivity(FragmentManager fragmentManager, Fragment fragment, int frameId) {
-        if (null != fragmentManager && null != fragment) {
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            transaction.add(frameId, fragment);
-            transaction.commit();
-        }
-    }
-
-    /**
-     * 将一个Fragment添加到Activity中,并添加tag标识
-     * @param fragmentManager  fragment管理器
-     * @param fragment  需要添加的fragment
-     * @param frameId 布局FrameLayout的Id
-     * @param tag  fragment的唯一tag标识
-     * @param addToBackStack  是否添加到栈中，可通过返回键进行切换fragment
-     */
-    public static void addFragmentToActivity(FragmentManager fragmentManager, Fragment fragment, int frameId, String tag, boolean addToBackStack) {
-        if (null != fragmentManager && null != fragment) {
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            transaction.add(frameId, fragment, tag);
-            if (addToBackStack) {
-                transaction.addToBackStack(tag);
-            }
-            transaction.commit();
-        }
-    }
-
-    /**
-     * 对Fragment进行显示隐藏的切换，减少fragment的重复创建
-     * @param fragmentManager fragment管理器
-     * @param hideFragment  需要隐藏的Fragment
-     * @param showFragment  需要显示的Fragment
-     * @param frameId   布局FrameLayout的Id
-     * @param tag  fragment的唯一tag标识
-     */
-    public static void switchFragment(FragmentManager fragmentManager, Fragment hideFragment, Fragment showFragment, int frameId, String tag) {
-        if (fragmentManager != null) {
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            if (!showFragment.isAdded()) {
-                transaction.hide(hideFragment)
-                        .add(frameId, showFragment, tag)
-                        .commit();
-            } else {
-                transaction.hide(hideFragment)
-                        .show(showFragment)
-                        .commit();
-            }
-        }
-    }
-
-    /**
-     * 替换Activity中的Fragment
-     * @param fragmentManager fragment管理器
-     * @param fragment  需要替换到Activity的Fragment
-     * @param frameId  布局FrameLayout的Id
-     */
-    public static void replaceFragmentFromActivity(FragmentManager fragmentManager, Fragment fragment, int frameId) {
-        if (null != fragmentManager && null != fragment) {
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            transaction.replace(frameId, fragment);
-            transaction.commit();
+    public void exitApp(Context context) {
+        try {
+            finishAllActivity();
+            ActivityManager activityManager = (ActivityManager) context
+                    .getSystemService(Context.ACTIVITY_SERVICE);
+            activityManager.restartPackage(context.getPackageName());
+//            //清除通知栏
+//            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//            notificationManager.cancelAll();
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

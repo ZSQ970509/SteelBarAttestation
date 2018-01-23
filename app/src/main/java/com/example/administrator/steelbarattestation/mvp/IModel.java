@@ -10,6 +10,4 @@ package com.example.administrator.steelbarattestation.mvp;
  */
 
 public interface IModel {
-
-
 }

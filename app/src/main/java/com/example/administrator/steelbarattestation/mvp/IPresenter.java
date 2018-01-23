@@ -1,32 +1,13 @@
 package com.example.administrator.steelbarattestation.mvp;
 
 /**
- * Created by GaoSheng on 2016/11/26.
- * 17:20
- *
- * @VERSION V1.4
- * com.example.gs.mvpdemo.base
- * mvp之P
+ * ================================================
+ * 框架中的每个 Presenter 都需要实现此类,以满足规范
+ * ================================================
  */
 
 public interface IPresenter<V extends IView> {
-
-    /**
-     * @param view 绑定
-     */
     void attachView(V view);
-
-
-    /**
-     * 防止内存的泄漏,清楚presenter与activity之间的绑定
-     */
+    V getIView();
     void detachView();
-
-
-    /**
-     *
-     * @return 获取View
-     */
-    IView getIView();
-
 }

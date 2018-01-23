@@ -6,19 +6,6 @@ package com.example.administrator.steelbarattestation.url;
  */
 
 public class UrlHelper {
-
-
-   public static String BASE_URL = "http://192.168.1.186:4545";
-
-
-    public static class API{
-
-        public static final String API ="/Services";
-
-        //登录
-        public static final String Login ="/DataService.ashx?action=login";
-
-    }
-
-
+    public static String BASE_URL = "http://192.168.1.186:4545/";
+    public static final String API = "Services/";
 }

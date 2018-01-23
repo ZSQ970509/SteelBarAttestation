@@ -2,105 +2,73 @@ package com.example.administrator.steelbarattestation.exception;
 
 import android.net.ParseException;
 
-import org.apache.http.conn.ConnectTimeoutException;
+import com.example.administrator.steelbarattestation.http.NetResponse;
+import com.google.gson.JsonParseException;
+import com.google.gson.stream.MalformedJsonException;
+
 import org.json.JSONException;
 
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 
-import retrofit2.adapter.rxjava.HttpException;
+import retrofit2.HttpException;
+
 
 /**
- * Created by gaosheng on 2016/11/6.
- * 22:15
- * com.example.gaosheng.myapplication.exception
+ * 异常处理类
  */
 
 public class ExceptionEngine {
     //对应HTTP的状态码
-    private static final int FAIL = 0;
-    private static final int UNAUTHORIZED = 401;
-    private static final int FORBIDDEN = 403;
-    private static final int NOT_FOUND = 404;
-    private static final int REQUEST_TIMEOUT = 408;
-    private static final int INTERNAL_SERVER_ERROR = 500;
-    private static final int BAD_GATEWAY = 502;
-    private static final int SERVICE_UNAVAILABLE = 503;
-    private static final int GATEWAY_TIMEOUT = 504;
+    public static final int UN_KNOWN_ERROR = 1000;//未知错误
+    public static final int ANALYTIC_SERVER_DATA_ERROR = 1001;//解析(服务器)数据错误
+    public static final int ANALYTIC_CLIENT_DATA_ERROR = 1002;//解析(客户端)数据错误
+    public static final int CONNECT_ERROR = 1003;//网络连接错误
+    public static final int TIME_OUT_ERROR = 1004;//网络连接超时
 
     public static ApiException handleException(Throwable e) {
         ApiException ex;
-//        if (e instanceof ServerException) {             //HTTP错误
-//            ServerException httpException = (ServerException) e;
-//            ex = new ApiException(e, ErrorType.HTTP_ERROR);
-//            switch (httpException.code) {
-//                case FAIL:
-//                    ex.message = "接口请求错误";
-//                    break;
-//                case UNAUTHORIZED:
-//                    ex.message = "当前请求需要用户验证";
-//                    break;
-//                case FORBIDDEN:
-//                    ex.message = "服务器已经理解请求，但是拒绝执行它";
-//                    break;
-//                case NOT_FOUND:
-//                    ex.message = "服务器异常，请稍后再试";
-//                    break;
-//                case REQUEST_TIMEOUT:
-//                    ex.message = "请求超时";
-//                    break;
-//                case GATEWAY_TIMEOUT:
-//                    ex.message = "作为网关或者代理工作的服务器尝试执行请求时，未能及时从上游服务器（URI标识出的服务器，例如HTTP、FTP、LDAP" +
-//                            "）或者辅助服务器（例如DNS）收到响应";
-//                    break;
-//                case INTERNAL_SERVER_ERROR:
-//                    ex.message = "服务器遇到了一个未曾预料的状况，导致了它无法完成对请求的处理";
-//                    break;
-//                case BAD_GATEWAY:
-//                    ex.message = "作为网关或者代理工作的服务器尝试执行请求时，从上游服务器接收到无效的响应";
-//                    break;
-//                case SERVICE_UNAVAILABLE:
-//                    ex.message = "由于临时的服务器维护或者过载，服务器当前无法处理请求";
-//                    break;
-//                default:
-//                    ex.message = "网络错误";  //其它均视为网络错误
-//                    break;
-//            }
-//            return ex;
-//        } else
-        if (e instanceof ServerException) {    //服务器返回的错误
-            ServerException resultException = (ServerException) e;
-            ex = new ApiException(resultException, resultException.code);
-            ex.message = resultException.message;
+        if (e instanceof HttpException) {             //HTTP错误
+            HttpException httpExc = (HttpException) e;
+            ex = new ApiException(e, httpExc.code());
+            ex.setMessage("网络错误");  //均视为网络错误
             return ex;
-        } else if (e instanceof JSONException
-                || e instanceof ParseException) {
-            ex = new ApiException(e, ErrorType.PARSE_ERROR);
-            ex.message = "解析错误";            //均视为解析错误
+        } else if (e instanceof ServerException) {    //服务器返回的错误
+            ServerException serverExc = (ServerException) e;
+            ex = new ApiException(serverExc, serverExc.getCode());
+            ex.setMessage(serverExc.getMessage());
             return ex;
-        } else if (e instanceof ConnectException || e instanceof SocketTimeoutException || e
-                instanceof ConnectTimeoutException) {
-            ex = new ApiException(e, ErrorType.NETWORK_ERROR);
-            ex.message = "连接失败";  //均视为网络错误
+        } else if (e instanceof JsonParseException
+                || e instanceof JSONException
+                || e instanceof ParseException || e instanceof MalformedJsonException) {  //解析数据错误
+            ex = new ApiException(e, ANALYTIC_SERVER_DATA_ERROR);
+            ex.setMessage("解析错误");
             return ex;
-        } else if (e instanceof HttpException) {
-            if ("HTTP 404 Not Found".equals(e.getMessage())) {
-                ex = new ApiException(e, ErrorType.NETWORK_ERROR);
-                ex.message = "没有连接服务器";
-            } else {
-                ex = new ApiException(e, ErrorType.NETWORK_ERROR);
-                ex.message = "其他连接服务器错误";
-            }
+        } else if (e instanceof ConnectException) {//连接网络错误
+            ex = new ApiException(e, CONNECT_ERROR);
+            ex.setMessage("连接失败");
             return ex;
-
-        } else {
-            ex = new ApiException(e, ErrorType.UNKONW);
-            ex.message = "未知错误";          //未知错误
-            ex.message = e.toString();          //未知错误
-
+        } else if (e instanceof SocketTimeoutException) {//网络超时
+            ex = new ApiException(e, TIME_OUT_ERROR);
+            ex.setMessage("网络超时");
+            return ex;
+        } else {  //未知错误
+            ex = new ApiException(e, UN_KNOWN_ERROR);
+            ex.setMessage("未知错误");
             return ex;
         }
     }
 
+    /**
+     * 检测Api异常
+     * @param response
+     */
+    public static void checkApiException(NetResponse response){
+        if (response == null) {
+            throw new ServerException(ErrorType.EMPTY_BEAN, "服务器返回的数据为空");
+        } else if (!response.isSuccess()) {
+            throw new ServerException(response.getCode(), response.getMsg());
+        }
+    }
 }
 
