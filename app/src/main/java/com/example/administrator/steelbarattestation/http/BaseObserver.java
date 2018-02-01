@@ -1,7 +1,9 @@
 package com.example.administrator.steelbarattestation.http;
 
-import com.example.administrator.steelbarattestation.exception.ApiException;
+import com.example.administrator.steelbarattestation.exception.ErrorType;
+import com.example.administrator.steelbarattestation.exception.ExceptionEngine;
 import com.example.administrator.steelbarattestation.utils.NetworkUtil;
+import com.example.administrator.steelbarattestation.utils.ToastUtil;
 import com.orhanobut.logger.Logger;
 
 import io.reactivex.Observer;
@@ -26,15 +28,21 @@ public abstract class BaseObserver<T> implements Observer<T>, HttpRequest<T> {
     }
     @Override
     public void onNext(@NonNull T response) {
-        onSuccess(response);
+        //防止闪退问题
+        try {
+            onSuccess(response);
+        }catch (NullPointerException e){
+            e.printStackTrace();
+            ToastUtil.show("网络异常！错误码:"+ ErrorType.DATE_NULL);
+        }catch (Exception e){
+            e.printStackTrace();
+            ToastUtil.show("网络异常！错误码:"+ ErrorType.UNKNOWN);
+        }
     }
 
     @Override
     public void onError(@NonNull Throwable e) {
-        ApiException apiException = (ApiException) e;
-        Logger.e(apiException.getMessage());
-        onFail(apiException);
-//        disposable.dispose();
+        onError(ExceptionEngine.handleException(e));
     }
 
     @Override

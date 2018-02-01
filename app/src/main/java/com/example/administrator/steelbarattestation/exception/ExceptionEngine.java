@@ -15,7 +15,7 @@ import retrofit2.HttpException;
 
 
 /**
- * 异常处理类
+ * 异常转换类
  */
 
 public class ExceptionEngine {
@@ -28,10 +28,12 @@ public class ExceptionEngine {
 
     public static ApiException handleException(Throwable e) {
         ApiException ex;
-        if (e instanceof HttpException) {             //HTTP错误
+        if (e instanceof ApiException) {
+            return (ApiException)e;
+        }else if (e instanceof HttpException) {             //HTTP错误
             HttpException httpExc = (HttpException) e;
             ex = new ApiException(e, httpExc.code());
-            ex.setMessage("网络错误");  //均视为网络错误
+            ex.setMessage("网络错误"+httpExc.code());  //均视为网络错误
             return ex;
         } else if (e instanceof ServerException) {    //服务器返回的错误
             ServerException serverExc = (ServerException) e;
@@ -60,10 +62,10 @@ public class ExceptionEngine {
     }
 
     /**
-     * 检测Api异常
+     * 检测NetResponse数据
      * @param response
      */
-    public static void checkApiException(NetResponse response){
+    public static void checkNetResponse(NetResponse response){
         if (response == null) {
             throw new ServerException(ErrorType.EMPTY_BEAN, "服务器返回的数据为空");
         } else if (!response.isSuccess()) {

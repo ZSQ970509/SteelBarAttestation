@@ -15,7 +15,7 @@ public interface ErrorType {
     /**
      * 未知错误
      */
-    int UNKONW = 1000;
+    int UNKNOWN = 1000;
 
     /**
      * 解析错误
@@ -30,10 +30,12 @@ public interface ErrorType {
      * 解析对象为空
      */
     int EMPTY_BEAN = 1004;
-
-
     /**
      *
      */
     int HTTP_ERROR = 1003;
+    /**
+     * 数据为空
+     */
+    int DATE_NULL = 1005;
 }

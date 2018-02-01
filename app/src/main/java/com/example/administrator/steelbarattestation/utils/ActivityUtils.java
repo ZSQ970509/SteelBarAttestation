@@ -105,9 +105,6 @@ public enum  ActivityUtils {
             ActivityManager activityManager = (ActivityManager) context
                     .getSystemService(Context.ACTIVITY_SERVICE);
             activityManager.restartPackage(context.getPackageName());
-//            //清除通知栏
-//            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-//            notificationManager.cancelAll();
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(0);
         } catch (Exception e) {
